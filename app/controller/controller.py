@@ -1,3 +1,4 @@
+from datetime import datetime
 import phonenumbers
 from app.models.user import UserModel as User
 
@@ -20,19 +21,18 @@ class UserController:
         start = (page - 1) * page_size
         end = start + page_size
 
-        print (f"Start: {start}, End: {end},  Data: {len(data)}")
         return data[start:end]
 
     @staticmethod
     async def get_classified_users(data: list, page: int, page_size: int) -> list[User]:
         filtered_users = await UserController.get_filtered_users(data)
-        print(f"Filtered users count: {len(filtered_users)}") 
 
         paginated_users = UserController.paginate_users(filtered_users, page, page_size)
-        print(f"Paginated users count: {len(paginated_users)}")
 
         classified_data = []
         for user in paginated_users:
+            birthday = datetime.fromisoformat(user.birthday[:-1]).strftime("%d/%m/%Y")  # Formato "dia/mês/ano"
+            registered = datetime.fromisoformat(user.registered[:-1]).strftime("%d/%m/%Y")  # Formato "dia/mês/ano"
             classified_user = {
                 "type": user.type,
                 "gender": user.gender,
@@ -57,8 +57,8 @@ class UserController:
                     }
                 },
                 "email": user.email,
-                "birthday": user.birthday,
-                "registered": user.registered,
+                "birthday": birthday,
+                "registered": registered,
                 "telephone_numbers": user.telephone_numbers,
                 "mobile_numbers": user.mobile_numbers,
                 "picture": {
@@ -70,18 +70,14 @@ class UserController:
             }
             classified_data.append(classified_user)
             
-        print(f"Classified users count: {len(classified_data)}") 
         return classified_data
         
 
     @staticmethod
-    def classify_region(coordinates: dict) -> str:
+    def classify_region(latitude: str, longitude: str) -> str:
 
-        try:
-            longitude = float(coordinates['longitude'])
-            latitude = float(coordinates['latitude']) 
-        except (ValueError, TypeError):
-            return "trabalhoso"
+        longitude = float(longitude)
+        latitude = float(latitude) 
 
         especial_box = {
             "minlon": -15.411580,
@@ -96,8 +92,6 @@ class UserController:
             "maxlon": -26.155681,
             "maxlat": -46.603598
         }
-
-        print(f"Longitude: {longitude}, Latitude: {latitude}")
 
         if (especial_box["minlon"] <= longitude <= especial_box["maxlon"] and
                     especial_box["minlat"] <= latitude <= especial_box["maxlat"]):
@@ -115,7 +109,6 @@ class UserController:
         if state:
             region = REGIONS_MAP.get(state)
 
-            print(f"State: {state}, Region: {region}")
             if region:
                 return region
             else:

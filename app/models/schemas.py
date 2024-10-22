@@ -29,6 +29,7 @@ class Picture(BaseModel):
     thumbnail: str
 
 class User(BaseModel):
+    type: str
     gender: str
     name: Name
     location: Location
@@ -41,7 +42,7 @@ class User(BaseModel):
     nationality: str
 
 class PaginatedResponse(BaseModel):
-    page_number: int
-    page_size: int
-    total_count: int
+    pageNumber: int
+    pageSize: int
+    totalCount: int
     users: list[User]

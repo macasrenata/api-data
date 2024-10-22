@@ -1,24 +1,27 @@
-import os
 from app.adapters.data_adapter import DataAdapter
 from app.models.user import UserModel as User
 from app.models.schemas import Name, Location, Picture
 from app.controller.controller import UserController
+from app.core.config import settings
 
 user_data = UserController()
 
 class DataService:
     def __init__(self):
         self._data_cache = None
+        self.settings = settings
 
     async def load_data(self):
         if not self._data_cache:
-            csv_url = os.getenv("CSV_URL", "https://storage.googleapis.com/juntossomosmais-code-challenge/input-backend.csv")
-            json_url = os.getenv("JSON_URL", "https://storage.googleapis.com/juntossomosmais-code-challenge/input-backend.json")
+            csv_url = self.settings.csv_url
+            json_url = self.settings.json_url
+
             csv_content = await DataAdapter.fetch_and_transform_data(csv_url, "csv")
             json_content = await DataAdapter.fetch_and_transform_data(json_url, "json")
 
             data_json = await parse_data(json_content)
             data_csv = await parse_csv_data(csv_content)
+
             self._data_cache = data_json + data_csv
 
         return self._data_cache
@@ -38,7 +41,7 @@ async def parse_data(json_content: list[dict]) -> list[User]:
     if 'results' in json_content:
         for user in json_content["results"]:
             user_model = User(
-                type=user_data.classify_region(user["location"]["coordinates"]),
+                type=user_data.classify_region(user["location"]["coordinates"]["latitude"], user["location"]["coordinates"]["longitude"]),
                 gender="M" if user["gender"] == "male" else "F",
                 name=Name(
                     title=user["name"]["title"],
@@ -74,8 +77,6 @@ async def parse_data(json_content: list[dict]) -> list[User]:
             )
             parsed_data.append(user_model)
 
-    print(f"Json users: {len(parsed_data)}")
-
     return parsed_data
 
 async def parse_csv_data(csv_content: list[dict]) -> list[User]:
@@ -89,7 +90,7 @@ async def parse_csv_data(csv_content: list[dict]) -> list[User]:
 
     for row in csv_content:
         user_model = User(
-            type=user_data.classify_region(row.get("location__coordinates", "")),
+            type=user_data.classify_region(row.get("location__coordinates__latitude", ""), row.get("location__coordinates__longitude", "")),
             gender="M" if row["gender"] == "male" else "F",
             name=Name(
                 title=row.get("name__title", ""),
@@ -124,7 +125,5 @@ async def parse_csv_data(csv_content: list[dict]) -> list[User]:
             nationality=row.get("nationality", "BR") or "BR"
         )
         parsed_data.append(user_model)
-
-    print(f"CSV users count: {len(parsed_data)}")
 
     return parsed_data

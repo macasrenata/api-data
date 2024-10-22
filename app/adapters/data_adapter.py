@@ -4,6 +4,7 @@ import httpx
 from io import StringIO
 
 class DataAdapter:
+    
     @staticmethod
     async def fetch_and_transform_data(url: str, data_format: str) -> list[dict]:
         async with httpx.AsyncClient() as client:
