@@ -67,7 +67,7 @@ Se preferir utilizar Docker, ainda pode seguir o processo padrão com o Dockerfi
 docker build -t user-api .
 ```
 
-### Rodando o contêiner: Execute o contêiner normalmente com
+### Rodando o contêiner
 
 ```bash
 docker run -p 8080:8080 user-api
