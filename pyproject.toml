@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "api-data"
+version = "0.1.0"
+description = "A FastAPI project for user classification"
+authors = ["Renata Maçãs <renata.macas@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.100.0"
+uvicorn = "^0.21.1"
+httpx = "^0.23.3"
+pytest = "^7.2.0"
+pydantic = "2.5.2"
+pydantic-settings = "2.1.0"
+phonenumbers = "^8.13.47"
+geopy = "^2.4.1"
+
+[tool.poetry.dev-dependencies]
+httpx = "^0.23.3"
+pytest = "^7.4.3"
+coverage = "^7.3.2"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+
+[tool.poetry.scripts]
+api-data = "app.main:app"
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+python_files = ["test_*.py", "spec_*.py"]
+norecursedirs = [".git", ".pytest_cache"]
+addopts = """
+  --color=yes
+  --verbose
+  --cov-report term-missing:skip-covered
+  --cov-report xml
+  --cov app
+"""
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+precision = 2
