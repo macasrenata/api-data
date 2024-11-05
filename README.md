@@ -1,4 +1,4 @@
-# Juntos Somos Mais - User Data API
+# User Data API
 
 ## Descrição
 
